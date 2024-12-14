@@ -1,0 +1,365 @@
+// // LCD SCREEN DEMO
+// 1. Simple Text messages
+// 2. Basic Shapes
+// 3. Other Examples
+
+#include "drivers/LCD_DISCO_F429ZI.h"
+#include "mbed.h"
+
+//EXAMPLE 1 --> Hello
+
+int main() {
+    // Initialize the LCD object
+    LCD_DISCO_F429ZI lcd;
+
+    // Display a single character 'H' at the top-left corner
+    lcd.DisplayChar(0, 0, 'H');
+
+    // Display "Hello" on the same line using individual characters
+    lcd.DisplayChar(0, 0, 'H');
+    lcd.DisplayChar(0, 1, 'e');
+    lcd.DisplayChar(0, 2, 'l');
+    lcd.DisplayChar(0, 3, 'l');
+    lcd.DisplayChar(0, 4, 'o');
+}
+
+//EXAMPLE 2
+const uint8_t spacing = 10; // Adjust spacing for characters
+
+int main() {
+    LCD_DISCO_F429ZI lcd;
+
+    // Display "Hello" with custom horizontal spacing
+    lcd.DisplayChar(0 + 0 * spacing, 0, 'H');
+    lcd.DisplayChar(0 + 1 * spacing, 0, 'e');
+    lcd.DisplayChar(0 + 2 * spacing, 0, 'l');
+    lcd.DisplayChar(0 + 3 * spacing, 0, 'l');
+    lcd.DisplayChar(0 + 4 * spacing, 0, 'o');
+
+    // Display "Hello" on multiple lines
+    lcd.DisplayChar(0 + 0 * spacing, LINE(0), 'H');
+    lcd.DisplayChar(0 + 1 * spacing, LINE(1), 'e');
+    lcd.DisplayChar(0 + 2 * spacing, LINE(2), 'l');
+    lcd.DisplayChar(0 + 3 * spacing, LINE(3), 'l');
+    lcd.DisplayChar(0 + 4 * spacing, LINE(4), 'o');
+}
+
+//EXAMPLE 3
+int main() {
+    LCD_DISCO_F429ZI lcd;
+
+    // Display a complete string on a single line
+    lcd.DisplayStringAtLine(0, (uint8_t *)"Hello World!");
+
+    // Center-align the string on a specific line
+    lcd.DisplayStringAt(0, LINE(3), (uint8_t *)"Hello World!", CENTER_MODE);
+}
+
+//EXAMPLE 4
+int main() {
+    LCD_DISCO_F429ZI lcd;
+
+    // Clear the screen with a black background
+    lcd.Clear(LCD_COLOR_BLACK);
+
+    // Set text color to red
+    lcd.SetTextColor(LCD_COLOR_RED);
+
+    // Set background color to black
+    lcd.SetBackColor(LCD_COLOR_BLACK);
+}
+
+//EXAMPLE 5
+int main() {
+    LCD_DISCO_F429ZI lcd;
+
+    char buf[60];
+
+    // Display LCD width and height
+    snprintf(buf, 60, "Width: %lu pixels", lcd.GetXSize());
+    lcd.DisplayStringAtLine(0, (uint8_t *)buf);
+
+    snprintf(buf, 60, "Height: %lu pixels", lcd.GetYSize());
+    lcd.DisplayStringAtLine(1, (uint8_t *)buf);
+}
+
+//EXAMPLE 6 BASIC SHAPES
+const auto spacing = 100;
+
+int main() {
+    LCD_DISCO_F429ZI lcd;
+
+    // Draw circles
+    lcd.DrawCircle(70, LINE(5), 25);
+    lcd.DrawCircle(70 + 1 * spacing, LINE(5), 25);
+
+    // Draw filled circles
+    lcd.FillCircle(70 + 0 * spacing, LINE(5), 25);
+    lcd.FillCircle(70 + 1 * spacing, LINE(5), 25);
+}
+
+//EXAMPLE 7 CIRCLE IN A CIRCLE
+int main() {
+    LCD_DISCO_F429ZI lcd;
+
+    // Circle in a circle example
+    lcd.FillCircle(70, LINE(5), 25);
+    lcd.SetTextColor(LCD_COLOR_WHITE);
+    lcd.FillCircle(75, LINE(5), 5);
+
+    lcd.SetTextColor(LCD_COLOR_BLACK);
+    lcd.FillCircle(170, LINE(5), 25);
+    lcd.SetTextColor(LCD_COLOR_WHITE);
+    lcd.FillCircle(165, LINE(5), 5);
+}
+
+//EXAMPLE 8 SMILEY
+int main() {
+    LCD_DISCO_F429ZI lcd;
+
+    lcd.SetTextColor(LCD_COLOR_RED);
+
+    // Smiley face using polygons and triangles
+    Point smile[] = {{70, LINE(10)}, {120, LINE(15)}, {170, LINE(10)}};
+    lcd.DrawPolygon(smile, 3);
+    lcd.FillPolygon(smile, 3);
+
+    // Draw rectangle for the mouth
+    lcd.DrawRect(70, LINE(10), 100, 19);
+}
+
+// EXAMPLE 9
+// (a) Basic Smiley Face
+// int main() {
+//     LCD_DISCO_F429ZI lcd;
+
+//     // Clear the screen and set the background color
+//     lcd.Clear(LCD_COLOR_BLACK);
+
+//     // Draw the face (yellow circle)
+//     lcd.SetTextColor(LCD_COLOR_YELLOW);
+//     lcd.FillCircle(120, 120, 80);
+
+//     // Draw the eyes (black circles)
+//     lcd.SetTextColor(LCD_COLOR_BLACK);
+//     lcd.FillCircle(90, 90, 10);  // Left eye
+//     lcd.FillCircle(150, 90, 10); // Right eye
+
+//     // Draw the smile (red arc)
+//     lcd.SetTextColor(LCD_COLOR_RED);
+//     Point smile[] = {{80, 140}, {120, 160}, {160, 140}};
+//     lcd.FillPolygon(smile, 3);
+
+//     while (1) {
+//         thread_sleep_for(1000);  // Empty Loop
+//     }
+// }
+
+// EXAMPLE 10 Alternate Smiley
+// #include <cmath>
+
+// #define PI 3.14159
+
+// int main() {
+//     LCD_DISCO_F429ZI lcd;
+
+//     // Clear the screen and set the background color
+//     lcd.Clear(LCD_COLOR_BLACK);
+
+//     // Draw the face (yellow circle)
+//     lcd.SetTextColor(LCD_COLOR_YELLOW);
+//     lcd.FillCircle(120, 120, 80);
+
+//     // Draw the eyes (black circles)
+//     lcd.SetTextColor(LCD_COLOR_BLACK);
+//     lcd.FillCircle(90, 90, 10);  // Left eye
+//     lcd.FillCircle(150, 90, 10); // Right eye
+
+//     // Draw the smile (red arc)
+//     lcd.SetTextColor(LCD_COLOR_RED);
+
+//     // Arc parameters
+//     int centerX = 120;  // Center of the face
+//     int centerY = 130;  // Slightly below the center for the smile
+//     int radius = 50;    // Radius of the smile
+//     int startAngle = 30;  // Start of the arc (in degrees)
+//     int endAngle = 150;   // End of the arc (in degrees)
+
+//     for (int angle = startAngle; angle <= endAngle; angle++) {
+//         // Convert angle to radians
+//         float rad = angle * PI / 180;
+
+//         // Calculate the arc's points
+//         int x = centerX + radius * cos(rad);
+//         int y = centerY + radius * sin(rad);
+
+//         // Draw each point on the arc
+//         lcd.DrawPixel(x, y, LCD_COLOR_RED);
+//     }
+
+//     while (1) {
+//         thread_sleep_for(1000);  // Empty Loop
+//     }
+// }
+
+// EXAMPLE 11 Animated Bouncing Ball
+// int main() {
+//     LCD_DISCO_F429ZI lcd;
+
+//     // Clear the screen and set the background color
+//     lcd.Clear(LCD_COLOR_BLACK);
+
+//     // Set the color for the ball
+//     lcd.SetTextColor(LCD_COLOR_BLUE);
+
+//     // Ball parameters
+//     uint16_t ballX = lcd.GetXSize() / 2;  // Start at the center of the screen
+//     uint16_t ballY = lcd.GetYSize() / 2;
+//     int16_t ballDX = 5;  // Ball movement in X direction
+//     int16_t ballDY = 3;  // Ball movement in Y direction
+//     uint16_t ballRadius = 10;
+
+//     while (1) {
+//         // Erase the old ball position by filling with background color
+//         lcd.SetTextColor(LCD_COLOR_BLACK);
+//         lcd.FillCircle(ballX, ballY, ballRadius);
+
+//         // Update ball position
+//         ballX += ballDX;
+//         ballY += ballDY;
+
+//         // Check for collisions with screen edges and reverse direction
+//         if (ballX - ballRadius <= 0 || ballX + ballRadius >= lcd.GetXSize()) {
+//             ballDX = -ballDX;
+//         }
+//         if (ballY - ballRadius <= 0 || ballY + ballRadius >= lcd.GetYSize()) {
+//             ballDY = -ballDY;
+//         }
+
+//         // Draw the ball at the new position
+//         lcd.SetTextColor(LCD_COLOR_BLUE);
+//         lcd.FillCircle(ballX, ballY, ballRadius);
+
+//         // Small delay to control animation speed
+//         thread_sleep_for(30);
+//     }
+// }
+
+// EXAMPLE 12 Timer on Screen
+// int main() {
+//     LCD_DISCO_F429ZI lcd;
+
+//     // Clear the screen
+//     lcd.Clear(LCD_COLOR_BLACK);
+//     lcd.SetBackColor(LCD_COLOR_BLACK);
+//     lcd.SetTextColor(LCD_COLOR_WHITE);
+
+//     time_t rawtime;
+//     struct tm *timeinfo;
+
+//     while (1) {
+//         // Get current time
+//         time(&rawtime);
+//         timeinfo = localtime(&rawtime);
+
+//         char timeStr[9];
+//         strftime(timeStr, 9, "%H:%M:%S", timeinfo);
+
+//         // Clear the previous time
+//         lcd.ClearStringLine(5);
+
+//         // Display the current time
+//         lcd.DisplayStringAt(0, LINE(5), (uint8_t *)timeStr, CENTER_MODE);
+
+//         thread_sleep_for(1000);  // Update every second
+//     }
+// }
+
+//EXAMPLE 13 Rotating Line - Loading Screen
+// #include <cmath>
+
+// #define PI 3.14159
+
+// int main() {
+//     LCD_DISCO_F429ZI lcd;
+
+//     // Clear the screen
+//     lcd.Clear(LCD_COLOR_BLACK);
+
+//     // Set initial text color for the lines
+//     lcd.SetTextColor(LCD_COLOR_WHITE);
+
+//     uint16_t centerX = lcd.GetXSize() / 2;
+//     uint16_t centerY = lcd.GetYSize() / 2;
+//     uint16_t radius = 80;
+
+//     while (1) {
+//         for (int angle = 0; angle < 360; angle += 10) {
+//             // Convert angle to radians
+//             float rad = angle * PI / 180;
+
+//             // Calculate end point of the line
+//             uint16_t endX = centerX + radius * cos(rad);
+//             uint16_t endY = centerY + radius * sin(rad);
+
+//             // Draw the line
+//             lcd.DrawLine(centerX, centerY, endX, endY);
+
+//             thread_sleep_for(50);
+
+//             // Erase the line for the next frame
+//             lcd.SetTextColor(LCD_COLOR_BLACK);  // Set color to background color
+//             lcd.DrawLine(centerX, centerY, endX, endY);
+
+//             lcd.SetTextColor(LCD_COLOR_WHITE);  // Reset color to line color
+//         }
+//     }
+// }
+
+// EXAMPLE 14 Moving Rectangle Loading Screen
+// int main() {
+//     LCD_DISCO_F429ZI lcd;
+
+//     // Clear the screen
+//     lcd.Clear(LCD_COLOR_BLACK);
+
+//     // Rectangle parameters
+//     uint16_t rectWidth = 50;
+//     uint16_t rectHeight = 20;
+//     uint16_t rectY = lcd.GetYSize() / 2 - rectHeight / 2;
+
+//     while (1) {
+//         for (uint16_t x = 0; x < lcd.GetXSize() - rectWidth; x++) {
+//             // Set color to green for the rectangle
+//             lcd.SetTextColor(LCD_COLOR_GREEN);
+//             // Draw the rectangle at the current position
+//             lcd.FillRect(x, rectY, rectWidth, rectHeight);
+
+//             // Set color to black to erase the previous rectangle
+//             lcd.SetTextColor(LCD_COLOR_BLACK);
+//             if (x > 0) {
+//                 // Erase one pixel-wide column of the previous rectangle
+//                 lcd.FillRect(x - 1, rectY, 1, rectHeight);
+//             }
+
+//             thread_sleep_for(10);  // Control animation speed
+//         }
+//     }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
