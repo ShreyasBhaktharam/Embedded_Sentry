@@ -12,6 +12,19 @@
 #define DATA_READY_FLAG 2
 #define STABILITY_THRESHOLD 500
 #define STABILITY_COUNT 20
+#define MOVEMENT_THRESHOLD 1000
+#define MOVEMENT_DURATION 5
+
+// Movement detection states
+enum Movement {
+    NONE,
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    Z_ANTICLOCKWISE,
+    Z_CLOCKWISE
+};
 
 EventFlags flags;
 void spi_cb(int event) {
@@ -26,12 +39,85 @@ LCD_DISCO_F429ZI lcd;
 SPI spi(PF_9, PF_8, PF_7, PC_1, use_gpio_ssel);
 InterruptIn int2(PA_2, PullDown);
 
+Movement detect_movement(int gx, int gy, int gz) {
+    if (abs(gx) > abs(gy)) {  // Stronger movement in X axis
+        if (gx > MOVEMENT_THRESHOLD)
+            return RIGHT;
+        else if (gx < -MOVEMENT_THRESHOLD)
+            return LEFT;
+    }
+    else if (abs(gy) > abs(gx)) {  // Stronger movement in Y axis
+        if (gy > MOVEMENT_THRESHOLD)
+            return UP;
+        else if (gy < -MOVEMENT_THRESHOLD)
+            return DOWN;
+    }
+
+    if (gz > MOVEMENT_THRESHOLD)
+        return Z_ANTICLOCKWISE;
+    else if (gz < -MOVEMENT_THRESHOLD)
+        return Z_CLOCKWISE;
+    
+    return NONE;
+}
+
+void display_movement(Movement mov) {
+    lcd.SetTextColor(LCD_COLOR_BLUE);
+    switch(mov) {
+        case UP:
+            lcd.Clear(LCD_COLOR_BLACK);
+            lcd.SetTextColor(LCD_COLOR_RED);
+            lcd.DisplayStringAt(0, LINE(7), (uint8_t *)"CLOCKWISE", CENTER_MODE);
+            break;
+
+        case DOWN:
+            lcd.Clear(LCD_COLOR_BLACK);
+            lcd.SetTextColor(LCD_COLOR_RED);
+            lcd.DisplayStringAt(0, LINE(7), (uint8_t *)"ANTI CLOCKWISE", CENTER_MODE);
+            break;
+
+        case LEFT:
+            lcd.Clear(LCD_COLOR_BLACK);
+            lcd.SetTextColor(LCD_COLOR_RED);
+            lcd.DisplayStringAt(0, LINE(7), (uint8_t *)"MOVING DOWN", CENTER_MODE);
+            break;
+
+        case RIGHT:
+            lcd.Clear(LCD_COLOR_BLACK);
+            lcd.SetTextColor(LCD_COLOR_RED);
+            lcd.DisplayStringAt(0, LINE(7), (uint8_t *)"MOVING UP", CENTER_MODE);
+            break;
+
+        case Z_ANTICLOCKWISE:
+            lcd.Clear(LCD_COLOR_BLACK);
+            lcd.SetTextColor(LCD_COLOR_RED);
+            lcd.DisplayStringAt(0, LINE(7), (uint8_t *)"Z ANTICLOCKWISE", CENTER_MODE);
+            break;
+
+        case Z_CLOCKWISE:
+            lcd.Clear(LCD_COLOR_BLACK);
+            lcd.SetTextColor(LCD_COLOR_RED);
+            lcd.DisplayStringAt(0, LINE(7), (uint8_t *)"Z CLOCKWISE", CENTER_MODE);
+            break;
+
+        default:
+            lcd.Clear(LCD_COLOR_WHITE);
+            lcd.SetTextColor(LCD_COLOR_RED);
+            lcd.DisplayStringAt(0, LINE(7), (uint8_t *)"NO MOVEMENT", CENTER_MODE);
+            break;
+
+    }
+}
+
 int main() {
     uint8_t write_buf[32], read_buf[32];
     int16_t raw_gx, raw_gy, raw_gz;
     int gx, gy, gz;
     int stable_count = 0;
     bool is_locked = false;
+    Movement current_movement = NONE;
+    Movement last_movement = NONE;
+    int movement_count = 0;
 
     int2.rise(&data_cb);
     spi.format(8, 3);
@@ -72,7 +158,7 @@ int main() {
             stable_count++;
             if (stable_count >= STABILITY_COUNT && !is_locked) {
                 is_locked = true;
-                lcd.Clear(LCD_COLOR_WHITE);
+                lcd.Clear(LCD_COLOR_BLACK);
                 lcd.SetTextColor(LCD_COLOR_RED);
                 lcd.DisplayStringAt(0, LINE(5), (uint8_t *)"LOCKED", CENTER_MODE);
                 led1 = 1;
@@ -89,6 +175,26 @@ int main() {
                 led2 = 1;
             }
         }
+
+        // Detect movement when unlocked
+            if (!is_locked) {
+                Movement detected = detect_movement(gx, gy, gz);
+                
+                if (detected == last_movement && detected != NONE) {
+                    movement_count++;
+                    if (movement_count >= MOVEMENT_DURATION && detected != current_movement) {
+                        current_movement = detected;
+                        display_movement(current_movement);
+                    }
+                } else {
+                    movement_count = 0;
+                    last_movement = detected;
+                    if (detected == NONE && current_movement != NONE) {
+                        current_movement = NONE;
+                        display_movement(NONE);
+                    }
+                }
+            }
 
         thread_sleep_for(100);
     }
