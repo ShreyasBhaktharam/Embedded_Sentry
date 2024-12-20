@@ -1,3 +1,8 @@
+// Team Members:
+// Shreyas Bhaktharam (sb9855)
+// Monish Raman Vishakraman (mv2734)
+// Rohan Raju Dhengale (rd3668)
+
 #include "mbed.h"
 #include "drivers/LCD_DISCO_F429ZI.h" 
 #include "FlashIAP.h"
