@@ -435,27 +435,6 @@ if (abs(gx) < STABILITY_THRESHOLD && abs(gy) < STABILITY_THRESHOLD &&
             }
         }
 
-
-        // Detect movement when unlocked
-            // if (!is_locked) {
-            //     Movement detected = detect_movement(gx, gy, gz);
-                
-            //     if (detected == last_movement && detected != NONE) {
-            //         movement_count++;
-            //         if (movement_count >= MOVEMENT_DURATION && detected != current_movement) {
-            //             current_movement = detected;
-            //             display_movement(current_movement);
-            //         }
-            //     } else {
-            //         movement_count = 0;
-            //         last_movement = detected;
-            //         if (detected == NONE && current_movement != NONE) {
-            //             current_movement = NONE;
-            //             display_movement(NONE);
-            //         }
-            //     }
-            // }
-
         thread_sleep_for(100);
     }
 }
