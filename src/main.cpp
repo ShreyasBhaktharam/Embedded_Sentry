@@ -24,8 +24,8 @@
 // Movement detection states
 enum Movement {
     NONE,
-    UP,
-    DOWN,
+    CLOCKWISE,
+    ANTICLOCKWISE,
     LEFT,
     RIGHT,
     Z_ANTICLOCKWISE,
@@ -113,9 +113,9 @@ Movement detect_movement(int gx, int gy, int gz) {
     }
     else if (abs(gy) > abs(gx)) {  // Stronger movement in Y axis
         if (gy > MOVEMENT_THRESHOLD)
-            return UP;
+            return CLOCKWISE;
         else if (gy < -MOVEMENT_THRESHOLD)
-            return DOWN;
+            return ANTICLOCKWISE;
     }
 
     if (gz > MOVEMENT_THRESHOLD)
@@ -129,13 +129,13 @@ Movement detect_movement(int gx, int gy, int gz) {
 void display_movement(Movement mov) {
     lcd.SetTextColor(LCD_COLOR_BLUE);
     switch(mov) {
-        case UP:
+        case CLOCKWISE:
             lcd.Clear(LCD_COLOR_BLACK);
             lcd.SetTextColor(LCD_COLOR_RED);
             lcd.DisplayStringAt(3, LINE(7), (uint8_t *)"CLOCKWISE", CENTER_MODE);
             break;
 
-        case DOWN:
+        case ANTICLOCKWISE:
             lcd.Clear(LCD_COLOR_BLACK);
             lcd.SetTextColor(LCD_COLOR_RED);
             lcd.DisplayStringAt(0, LINE(7), (uint8_t *)"ANTI CLOCKWISE", CENTER_MODE);
@@ -166,7 +166,7 @@ void display_movement(Movement mov) {
             break;
 
         default:
-            lcd.Clear(LCD_COLOR_WHITE);
+            lcd.Clear(LCD_COLOR_BLACK);
             lcd.SetTextColor(LCD_COLOR_RED);
             lcd.DisplayStringAt(0, LINE(7), (uint8_t *)"NO MOVEMENT", CENTER_MODE);
             break;
@@ -177,6 +177,7 @@ void display_movement(Movement mov) {
 void start_recording() {
     isRecording = true;
     currentSequence.length = 0;
+    lcd.Clear(LCD_COLOR_BLACK);
     lcd.SetTextColor(LCD_COLOR_RED);
     lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"RECORDING", CENTER_MODE);
 }
@@ -185,6 +186,7 @@ void stop_recording() {
     isRecording = false;
     currentSequence.isValid = 1;
     flashStorage.saveSequence(currentSequence);
+    lcd.Clear(LCD_COLOR_BLACK);
     lcd.SetTextColor(LCD_COLOR_GREEN);
     lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"SAVED", CENTER_MODE);
     thread_sleep_for(1000);
@@ -201,10 +203,10 @@ void display_stored_sequence() {
         for (int i = 0; i < stored.length; i++) {
             char movement[20];
             switch(stored.movements[i]) {
-                case UP:
-                    sprintf(movement, "UP");
+                case CLOCKWISE:
+                    sprintf(movement, "CLOCKWISE");
                     break;
-                case DOWN:
+                case ANTICLOCKWISE:
                     sprintf(movement, "DOWN");
                     break;
                 case LEFT:
@@ -241,6 +243,7 @@ public:
             lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"VERIFY SEQUENCE", CENTER_MODE);
             displayNextExpectedMove();
         } else {
+            lcd.Clear(LCD_COLOR_BLACK);
             lcd.SetTextColor(LCD_COLOR_RED);
             lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"NO SEQUENCE STORED", CENTER_MODE);
             thread_sleep_for(2000);
@@ -250,6 +253,7 @@ public:
 
     void displayNextExpectedMove() {
         if (currentIndex < storedSequence.length) {
+            // lcd.Clear(LCD_COLOR_BLACK);
             lcd.SetTextColor(LCD_COLOR_CYAN);
             char message[30];
             sprintf(message, "Next Move: %s", getMovementName(storedSequence.movements[currentIndex]));
@@ -263,8 +267,8 @@ public:
 
     const char* getMovementName(uint8_t movement) {
         switch(movement) {
-            case UP: return "UP";
-            case DOWN: return "DOWN";
+            case CLOCKWISE: return "CLOCKWISE";
+            case ANTICLOCKWISE: return "ANTICLOCKWISE";
             case LEFT: return "LEFT";
             case RIGHT: return "RIGHT";
             default: return "NONE";
@@ -306,10 +310,12 @@ public:
         lcd.Clear(LCD_COLOR_BLACK);
         
         if (success) {
-            lcd.SetTextColor(LCD_COLOR_GREEN);
+            lcd.SetBackColor(LCD_COLOR_GREEN);
+            lcd.SetTextColor(LCD_COLOR_BLACK);
             lcd.DisplayStringAt(0, LINE(5), (uint8_t *)"SEQUENCE MATCHED!", CENTER_MODE);
         } else {
-            lcd.SetTextColor(LCD_COLOR_RED);
+            lcd.SetBackColor(LCD_COLOR_RED);
+            lcd.SetTextColor(LCD_COLOR_BLACK);
             lcd.DisplayStringAt(0, LINE(5), (uint8_t *)"SEQUENCE FAILED!", CENTER_MODE);
         }
         
@@ -338,6 +344,9 @@ int main() {
     int2.rise(&data_cb);
     spi.format(8, 3);
     spi.frequency(1000000);
+
+    lcd.Init();
+    lcd.SetBackColor(LCD_COLOR_BLACK);
 
     write_buf[0] = CTRL_REG1;
     write_buf[1] = CTRL_REG1_CONFIG;
@@ -382,7 +391,7 @@ if (abs(gx) < STABILITY_THRESHOLD && abs(gy) < STABILITY_THRESHOLD &&
                         currentState = VERIFYING;
                         sequenceVerifier.startVerification();
                     }
-                    lcd.Clear(LCD_COLOR_WHITE);
+                    lcd.Clear(LCD_COLOR_BLACK);
                     lcd.SetTextColor(LCD_COLOR_RED);
                     lcd.DisplayStringAt(0, LINE(5), (uint8_t *)"LOCKED", CENTER_MODE);
                     led1 = 1;
