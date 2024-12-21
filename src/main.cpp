@@ -310,8 +310,8 @@ public:
         lcd.Clear(LCD_COLOR_BLACK);
         
         if (success) {
-            lcd.SetBackColor(LCD_COLOR_GREEN);
-            lcd.SetTextColor(LCD_COLOR_BLACK);
+            lcd.SetBackColor(LCD_COLOR_BLACK);
+            lcd.SetTextColor(LCD_COLOR_GREEN);
             lcd.DisplayStringAt(0, LINE(5), (uint8_t *)"MATCHED!", CENTER_MODE);
         } else {
             lcd.SetBackColor(LCD_COLOR_RED);
