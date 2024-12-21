@@ -312,11 +312,11 @@ public:
         if (success) {
             lcd.SetBackColor(LCD_COLOR_GREEN);
             lcd.SetTextColor(LCD_COLOR_BLACK);
-            lcd.DisplayStringAt(0, LINE(5), (uint8_t *)"SEQUENCE MATCHED!", CENTER_MODE);
+            lcd.DisplayStringAt(0, LINE(5), (uint8_t *)"MATCHED!", CENTER_MODE);
         } else {
             lcd.SetBackColor(LCD_COLOR_RED);
             lcd.SetTextColor(LCD_COLOR_BLACK);
-            lcd.DisplayStringAt(0, LINE(5), (uint8_t *)"SEQUENCE FAILED!", CENTER_MODE);
+            lcd.DisplayStringAt(0, LINE(5), (uint8_t *)"FAILED!", CENTER_MODE);
         }
         
         thread_sleep_for(MATCH_DISPLAY_TIME);
